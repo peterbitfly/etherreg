@@ -14,16 +14,16 @@ contract Registrar {
     address owner1 = 0x1212;
     address owner2 = 0x1212;
     
-    mapping (address => uint) fees;
-    mapping (bytes => Name) names;
+    mapping (address => uint) public fees;
+    mapping (bytes32 => Name) public names;
     
-    event AuctionClosed(bytes name, address owner, address target);
-    event AuctionStarted(bytes name, uint end);
-    event OwnerChanged(bytes name, address oldOwner, address newOwner);
-    event TargetChanged(bytes name, address target);
-    event RegistrationExtended(bytes name, uint newExpiry);
+    event AuctionClosed(bytes32 name, address owner, address target);
+    event AuctionStarted(bytes32 name, uint end);
+    event OwnerChanged(bytes32 name, address oldOwner, address newOwner);
+    event TargetChanged(bytes32 name, address target);
+    event RegistrationExtended(bytes32 name, uint newExpiry);
     
-    function Register(bytes name, address target) {
+    function Register(bytes32 name, address target) {
         
         if (msg.value < minFee)
             throw;
@@ -54,7 +54,7 @@ contract Registrar {
         throw;
     }
     
-    function CloseAuction(bytes name) { // Claim an address after the auction
+    function CloseAuction(bytes32 name) { // Claim an address after the auction
     
         if (now > names[name].auctionExpires && names[name].status == 1) {
             names[name].status = 2;
@@ -70,21 +70,21 @@ contract Registrar {
         throw;
     }
     
-    function ChangeTarget(bytes name, address target) {
+    function ChangeTarget(bytes32 name, address target) {
         if (names[name].owner == msg.sender && names[name].status == 2) {
             names[name].target = target;
             TargetChanged(name, target);
         }
     }
     
-    function ChangeOwner(bytes name, address owner) {
+    function ChangeOwner(bytes32 name, address owner) {
         if (names[name].owner == msg.sender && names[name].status == 2) {
             OwnerChanged(name, names[name].owner, owner);
             names[name].owner = owner;
         }
     }
     
-    function Extend(bytes name) { // Allows the owner to extend a registration for another year. An address can only be extended up to 60 days prior to its expiry date
+    function Extend(bytes32 name) { // Allows the owner to extend a registration for another year. An address can only be extended up to 60 days prior to its expiry date
         if (names[name].owner == msg.sender && names[name].status == 2 && now > names[name].registrationExpires - 60 days && msg.value >= names[name].bid) {
             names[name].registrationExpires = names[name].auctionExpires + 1 years;
             RegistrationExtended(name, names[name].registrationExpires);
