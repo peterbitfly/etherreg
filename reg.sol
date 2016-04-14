@@ -11,6 +11,7 @@ contract Registrar {
     }
     
     uint minFee = 1 ether;
+    uint auctionDuration = 1 minutes;
     address owner1 = 0x1212;
     address owner2 = 0x1212;
     
@@ -23,6 +24,10 @@ contract Registrar {
     event TargetChanged(bytes32 name, address target);
     event RegistrationExtended(bytes32 name, uint newExpiry);
     
+    function Resolve(bytes32 name) constant returns (address addr) {
+        return names[name].target;
+    }
+    
     function Register(bytes32 name, address target) {
         
         if (msg.value < minFee)
@@ -31,7 +36,7 @@ contract Registrar {
         if (names[name].status == 0 || (names[name].status == 2 && now > names[name].registrationExpires)) { // Name not yet registered, start auction
             names[name].status = 1;
             names[name].owner = msg.sender;
-            names[name].auctionExpires = now + 7 days; // Auction will last 7 days
+            names[name].auctionExpires = now + auctionDuration; // Auction will last 7 days
             names[name].bid = msg.value;
             names[name].target = target;
             AuctionStarted(name, names[name].auctionExpires);
@@ -95,7 +100,9 @@ contract Registrar {
         if (fees[msg.sender] > 0) {
             msg.sender.send(fees[msg.sender]);
             fees[msg.sender] = 0;
+            return;
         }
+        throw;
     }
     
     function UpdateMinFee(uint newFee) {
