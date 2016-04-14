@@ -4,7 +4,7 @@ contract Registrar {
         address target;
         uint auctionExpires;
         uint registrationExpires;
-        uint created;
+        bytes32 ip;
         address owner;
         uint bid;
         uint status;
@@ -12,8 +12,8 @@ contract Registrar {
     
     uint minFee = 1 ether;
     uint auctionDuration = 1 minutes;
-    address owner1 = 0x1212;
-    address owner2 = 0x1212;
+    address owner1 = 0x35115a19f77816ab262c7cfa3ac7c0b6b87e7049;
+    address owner2 = 0xaa115a19f77816ab262c7cfa3ac7c0b6b87e7050;
     
     mapping (address => uint) public fees;
     mapping (bytes32 => Name) public names;
@@ -22,6 +22,7 @@ contract Registrar {
     event AuctionStarted(bytes32 name, uint end);
     event OwnerChanged(bytes32 name, address oldOwner, address newOwner);
     event TargetChanged(bytes32 name, address target);
+    event IpChanged(bytes32 name, bytes32 ip);
     event RegistrationExtended(bytes32 name, uint newExpiry);
     
     function Resolve(bytes32 name) constant returns (address addr) {
@@ -79,6 +80,13 @@ contract Registrar {
         if (names[name].owner == msg.sender && names[name].status == 2) {
             names[name].target = target;
             TargetChanged(name, target);
+        }
+    }
+    
+    function ChangeIp(bytes32 name, bytes32 ip) {
+        if (names[name].owner == msg.sender && names[name].status == 2) {
+            names[name].ip = ip;
+            IpChanged(name, ip);
         }
     }
     
